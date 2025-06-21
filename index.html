@@ -153,7 +153,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- Card Novato -->
-                <div class="glass-effect rounded-xl p-8 text-center hover:border-accent-green transition-all duration-300 transform hover:-translate-y-2">
+                <div id="novato-card" class="glass-effect rounded-xl p-8 text-center hover:border-accent-green transition-all duration-300 transform hover:-translate-y-2 cursor-pointer">
                     <div class="flex justify-center mb-4">
                         <svg class="w-16 h-16 text-accent-green" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-3.797z" />
@@ -298,7 +298,7 @@
         </div>
     </footer>
 
-    <!-- Modal -->
+    <!-- Contact Modal -->
     <div id="resumen-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
         <div class="glass-effect rounded-xl shadow-2xl p-8 max-w-lg w-full text-white">
             <h3 class="text-2xl font-bold mb-4 text-accent-green">Resumen del Mensaje</h3>
@@ -315,6 +315,25 @@
             <div class="mt-8 flex justify-end space-x-4">
                 <button id="cancelar-btn" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-full hover:bg-gray-500 transition-colors">Cancelar</button>
                 <button id="confirmar-envio-btn" class="bg-accent-green text-gray-900 font-bold py-2 px-6 rounded-full hover:bg-accent-green-dark transition-colors">Confirmar y Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Link Modal -->
+    <div id="externo-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <div class="glass-effect rounded-xl shadow-2xl p-8 max-w-lg w-full text-white text-center">
+            <div class="flex justify-center mb-4">
+                <svg class="w-16 h-16 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold mb-4">Alerta de Seguridad</h3>
+            <p class="text-lg text-gray-300 mb-8">
+                Estás a punto de salir de Cáñamo Argentino para visitar un sitio externo. ¿Deseas continuar?
+            </p>
+            <div class="flex justify-center space-x-4">
+                <button id="externo-cancelar-btn" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-full hover:bg-gray-500 transition-colors">No, quedarme</button>
+                <button id="externo-confirmar-btn" class="bg-yellow-500 text-gray-900 font-bold py-2 px-6 rounded-full hover:bg-yellow-400 transition-colors">Sí, continuar</button>
             </div>
         </div>
     </div>
@@ -342,13 +361,12 @@
         const mensajeInput = document.getElementById('mensaje');
         const enviarBtn = document.getElementById('enviar-btn');
         
-        const modal = document.getElementById('resumen-modal');
+        const contactModal = document.getElementById('resumen-modal');
         const resumenAsunto = document.getElementById('resumen-asunto');
         const resumenMensaje = document.getElementById('resumen-mensaje');
         const confirmarBtn = document.getElementById('confirmar-envio-btn');
         const cancelarBtn = document.getElementById('cancelar-btn');
 
-        // Function to check if form is valid and enable/disable button
         function checkFormValidity() {
             if (asuntoInput.value.trim() !== '' && mensajeInput.value.trim() !== '') {
                 enviarBtn.disabled = false;
@@ -359,47 +377,61 @@
             }
         }
 
-        // Add input event listeners to check validity on the fly
         asuntoInput.addEventListener('input', checkFormValidity);
         mensajeInput.addEventListener('input', checkFormValidity);
 
-        // Handle form submission
         whatsappForm.addEventListener('submit', (e) => {
             e.preventDefault();
             if (enviarBtn.disabled) return;
-
-            // Populate and show the modal
             resumenAsunto.textContent = asuntoInput.value;
             resumenMensaje.textContent = mensajeInput.value;
-            modal.classList.remove('hidden');
+            contactModal.classList.remove('hidden');
         });
 
-        // Handle modal confirmation
         confirmarBtn.addEventListener('click', () => {
             const numeroWhatsapp = '5491169578193';
             const asunto = asuntoInput.value;
             const mensaje = mensajeInput.value;
-
             const textoWhatsapp = `Asunto: ${asunto}\n\nMensaje: ${mensaje}`;
             const url = `https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(textoWhatsapp)}`;
-
             window.open(url, '_blank');
-            
-            // Hide modal and reset form
-            modal.classList.add('hidden');
+            contactModal.classList.add('hidden');
             whatsappForm.reset();
             checkFormValidity();
         });
 
-        // Handle modal cancellation
         cancelarBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
+            contactModal.classList.add('hidden');
         });
 
-        // Also close modal if clicking on the background overlay
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
+        contactModal.addEventListener('click', (e) => {
+            if (e.target === contactModal) {
+                contactModal.classList.add('hidden');
+            }
+        });
+
+        // --- External Link Modal Logic ---
+        const novatoCard = document.getElementById('novato-card');
+        const externoModal = document.getElementById('externo-modal');
+        const externoConfirmarBtn = document.getElementById('externo-confirmar-btn');
+        const externoCancelarBtn = document.getElementById('externo-cancelar-btn');
+
+        novatoCard.addEventListener('click', () => {
+            externoModal.classList.remove('hidden');
+        });
+
+        externoCancelarBtn.addEventListener('click', () => {
+            externoModal.classList.add('hidden');
+        });
+
+        externoConfirmarBtn.addEventListener('click', () => {
+            window.open('https://juone0450.github.io/CultivoBases/', '_blank');
+            externoModal.classList.add('hidden');
+        });
+        
+        externoModal.addEventListener('click', (e) => {
+            if (e.target === externoModal) {
+                externoModal.classList.add('hidden');
             }
         });
     </script>
